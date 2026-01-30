@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusQRCode | Premium Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 900: '#0c4a6e' }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Premium Shine */
+        .shimmer-bg {
+            background: linear-gradient(
+                90deg, 
+                rgba(236, 236, 236, 1) 0%, 
+                rgba(245, 245, 245, 1) 50%, 
+                rgba(236, 236, 236, 1) 100%
+            );
+            background-size: 200% 100%;
+            animation: shine 1.5s infinite linear;
+        }
+        .dark .shimmer-bg {
+            background: linear-gradient(
+                90deg, 
+                rgba(31, 41, 55, 1) 0%, 
+                rgba(55, 65, 81, 1) 50%, 
+                rgba(31, 41, 55, 1) 100%
+            );
+            background-size: 200% 100%;
+        }
+        @keyframes shine {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+    </style>
+</head>
+<body class="h-full bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-300 overflow-hidden">
+
+    <div class="flex h-full flex-col md:flex-row">
+        
+        <!-- LEFT PANEL: Controls -->
+        <div class="w-full md:w-[450px] lg:w-[500px] flex-shrink-0 h-full overflow-y-auto glass-panel z-10 flex flex-col relative">
+            
+            <!-- Header -->
+            <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center sticky top-0 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md z-20">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white font-bold text-lg">N</div>
+                    <span class="font-bold text-xl tracking-tight">Nexus<span class="text-brand-600">QR</span></span>
+                </div>
+                <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition">
+                    <!-- Sun/Moon icons handled in JS -->
+                    <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <svg id="sunIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 space-y-8 flex-grow">
+                
+                <!-- Mode Tabs -->
+                <div class="bg-gray-200 dark:bg-gray-800 p-1 rounded-xl flex text-sm font-medium">
+                    <button class="tab-btn flex-1 py-2 px-4 rounded-lg bg-white dark:bg-gray-700 shadow-sm transition-all" data-target="simple">URL / Text</button>
+                    <button class="tab-btn flex-1 py-2 px-4 rounded-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all" data-target="business">Business / Discount</button>
+                </div>
+
+                <form id="qrForm" class="space-y-6">
+                    
+                    <!-- Dynamic Inputs -->
+                    <div id="simpleInput">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Content</label>
+                        <textarea id="url" rows="3" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none transition" placeholder="https://mysite.com or plain text"></textarea>
+                    </div>
+
+                    <div id="businessInput" class="hidden space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Customer ID</label>
+                                <input type="text" id="biz_cust_id" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none transition" placeholder="CUST-001">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Discount %</label>
+                                <input type="number" id="biz_discount" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none transition" placeholder="20">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Offer Code</label>
+                            <input type="text" id="biz_code" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-500 outline-none transition" placeholder="SUMMER2026">
+                        </div>
+                    </div>
+
+                    <!-- Customization Accordion -->
+                    <div class="border-t border-gray-200 dark:border-gray-800 pt-6">
+                        <h3 class="text-sm font-semibold mb-4 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                            Customization
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <!-- Colors -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">Foreground</label>
+                                    <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <input type="color" id="fill_color" value="#000000" class="w-8 h-8 rounded cursor-pointer border-none bg-transparent">
+                                        <span class="text-xs font-mono opacity-70" id="fill_hex">#000000</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500 mb-1">Background</label>
+                                    <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
+                                        <input type="color" id="back_color" value="#ffffff" class="w-8 h-8 rounded cursor-pointer border-none bg-transparent">
+                                        <span class="text-xs font-mono opacity-70" id="back_hex">#ffffff</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Logo Upload -->
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1">Center Logo (Optional)</label>
+                                <input type="file" id="logoUpload" accept="image/*" class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button type="submit" class="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl shadow-lg shadow-brand-500/30 font-semibold transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                        <span id="btnText">Generate Code</span>
+                        <svg id="btnIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </button>
+
+                </form>
+
+                <!-- Recent History -->
+                <div class="pt-6 border-t border-gray-200 dark:border-gray-800">
+                    <h4 class="text-xs font-bold uppercase text-gray-400 mb-3">Recent Generations</h4>
+                    <div id="historyList" class="space-y-2">
+                        <!-- History items injected here -->
+                        <div class="text-sm text-gray-400 italic">No history yet.</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Preview -->
+        <div class="flex-grow bg-white dark:bg-black relative flex items-center justify-center p-8 overflow-hidden">
+            <!-- Background Decoration -->
+            <div class="absolute inset-0 z-0 opacity-30 dark:opacity-20">
+                <div class="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-200 via-transparent to-transparent dark:from-brand-900"></div>
+            </div>
+
+            <div class="relative z-10 w-full max-w-lg text-center">
+                
+                <!-- Loading State -->
+                <div id="loader" class="hidden">
+                    <div class="w-72 h-72 mx-auto rounded-3xl shimmer-bg relative overflow-hidden shadow-2xl mb-6"></div>
+                    <p class="text-brand-600 dark:text-brand-400 font-medium animate-pulse">Compiling high-fidelity QR...</p>
+                </div>
+
+                <!-- Empty State -->
+                <div id="placeholder" class="text-center opacity-50">
+                    <div class="w-72 h-72 mx-auto border-4 border-dashed border-gray-300 dark:border-gray-700 rounded-3xl flex items-center justify-center mb-6">
+                        <div class="text-gray-400">
+                            <svg class="w-20 h-20 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"></path></svg>
+                            <span class="text-sm">Ready to Generate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Result State -->
+                <div id="result" class="hidden">
+                    <div class="relative group inline-block">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-brand-600 to-purple-600 rounded-3xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                        <img id="qrImage" src="" class="relative w-80 h-80 rounded-2xl shadow-2xl border-4 border-white dark:border-gray-800 bg-white" alt="QR Code">
+                    </div>
+
+                    <div class="mt-8 flex justify-center gap-4">
+                        <button id="downloadBtn" class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-6 py-3 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 font-medium hover:scale-105 transition-transform flex items-center gap-2">
+                            <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            Download PNG
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        let currentMode = 'simple';
+        let logoBase64 = null;
+
+        // --- Theme Toggler ---
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        // Check local storage or system pref
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+            document.getElementById('moonIcon').classList.add('hidden');
+            document.getElementById('sunIcon').classList.remove('hidden');
+        } else {
+            html.classList.remove('dark');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.theme = isDark ? 'dark' : 'light';
+            document.getElementById('moonIcon').classList.toggle('hidden', isDark);
+            document.getElementById('sunIcon').classList.toggle('hidden', !isDark);
+        });
+
+        // --- Tab Switching ---
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Reset Styles
+                tabs.forEach(t => {
+                    t.classList.remove('bg-white', 'dark:bg-gray-700', 'shadow-sm');
+                    t.classList.add('text-gray-500', 'dark:text-gray-400');
+                });
+                // Active Style
+                tab.classList.add('bg-white', 'dark:bg-gray-700', 'shadow-sm');
+                tab.classList.remove('text-gray-500', 'dark:text-gray-400');
+                
+                currentMode = tab.dataset.target;
+                
+                // Toggle Inputs
+                if (currentMode === 'simple') {
+                    document.getElementById('simpleInput').classList.remove('hidden');
+                    document.getElementById('businessInput').classList.add('hidden');
+                } else {
+                    document.getElementById('simpleInput').classList.add('hidden');
+                    document.getElementById('businessInput').classList.remove('hidden');
+                }
+            });
+        });
+
+        // --- Color Inputs ---
+        ['fill', 'back'].forEach(type => {
+            document.getElementById(`${type}_color`).addEventListener('input', (e) => {
+                document.getElementById(`${type}_hex`).textContent = e.target.value;
+            });
+        });
+
+        // --- Logo Upload Handling ---
+        document.getElementById('logoUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    logoBase64 = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                logoBase64 = null;
+            }
+        });
+
+        // --- Generator Logic ---
+        document.getElementById('qrForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Collect Data
+            let content = '';
+            let label = '';
+            
+            if (currentMode === 'simple') {
+                content = document.getElementById('url').value;
+                label = 'Link/Text';
+            } else {
+                const id = document.getElementById('biz_cust_id').value;
+                const disc = document.getElementById('biz_discount').value;
+                const code = document.getElementById('biz_code').value;
+                if (!id || !disc) { alert('Please fill in Customer ID and Discount'); return; }
+                
+                // Construct JSON for business logic
+                content = JSON.stringify({ type: 'discount', id, val: disc, code });
+                label = `Discount: ${disc}% (${code})`;
+            }
+
+            if (!content) return;
+
+            // UI Loading
+            const btn = document.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            
+            document.getElementById('placeholder').classList.add('hidden');
+            document.getElementById('result').classList.add('hidden');
+            document.getElementById('loader').classList.remove('hidden');
+
+            try {
+                // Minimum 2s wait for premium feel
+                const minWait = new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const fetchReq = fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content,
+                        fill_color: document.getElementById('fill_color').value,
+                        back_color: document.getElementById('back_color').value,
+                        logo_data: logoBase64
+                    })
+                });
+
+                const [_, response] = await Promise.all([minWait, fetchReq]);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const img = document.getElementById('qrImage');
+                    img.src = `data:image/png;base64,${data.image_data}`;
+                    
+                    document.getElementById('loader').classList.add('hidden');
+                    document.getElementById('result').classList.remove('hidden');
+
+                    // Add to History
+                    addToHistory(label, new Date().toLocaleTimeString());
+                } else {
+                    throw new Error('Generation failed');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Something went wrong. Please try again.');
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('placeholder').classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        });
+
+        // --- History Logic ---
+        function addToHistory(title, time) {
+            const list = document.getElementById('historyList');
+            const item = document.createElement('div');
+            item.className = 'flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm animate-[fadeIn_0.5s_ease-out]';
+            item.innerHTML = `
+                <div class="flex flex-col">
+                    <span class="font-medium text-xs text-gray-800 dark:text-gray-200">${title}</span>
+                    <span class="text-[10px] text-gray-400">${time}</span>
+                </div>
+                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+            `;
+            
+            // Remove "empty" message if exists
+            if (list.querySelector('.italic')) list.innerHTML = '';
+            
+            list.prepend(item);
+            
+            // Limit to 5 items
+            if (list.children.length > 5) list.lastElementChild.remove();
+        }
+
+        // --- Download ---
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.href = document.getElementById('qrImage').src;
+            link.download = `NexusQR-${Date.now()}.png`;
+            link.click();
+        });
+    </script>
+</body>
+</html>
